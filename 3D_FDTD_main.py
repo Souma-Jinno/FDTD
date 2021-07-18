@@ -5,71 +5,35 @@ from matplotlib.cm import get_cmap
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation #アニメーション作成のためメソッドをインポート
 
-
-from tqdm import tqdm
-import time
-
 from MakeSignal import *
-from calc_board import calc_board
+# from calc_board import calc_board
 from calc_stick import calc_stick
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------
-#　パラメータの入力
-#---------------------------------------------------------------------------------------------------------------------------------------------------
-dx = 0.01 # x方向空間差分間隔[m]
-dy = 0.01 # y方向空間差分間隔[m]
-dz = 0.01 # z方向空間差分間隔[m]
+import os
+import pandas as pd
 
-c = 2.99792458e8 # 光速[m/s]
-f = 1.0e9 # 周波数[Hz]
-
-t = 0
-dt = 0.99/(c * np.sqrt((1.0/dx ** 2 + 1.0/dy ** 2 + 1.0/dz ** 2))) #時間差分間隔[s]　#19.0657487[ps]
-
-nx = 51 # x方向計算点数
-ny = 51 # y方向計算点数
-nz = 51 # z方向計算点数
-nt = 150 # 計算ステップ数
-
-#金属棒の設定(z軸)
-in_stick = 11   #金属棒の始点
-len_stick = 30  #金属棒の長さ[cm]
-dis_stick = 0   #金属棒の間隔[cm]
-
-in_board = 11   #金属板の始点
-len_board = 30  #金属板の長さ[cm]
-wid_board = 3   #金造版の幅[cm]
-dis_board = 0   #金属板の間隔[cm]
-
-in_current = 10  #入力する電流の位置
-
-
-# 電気定数
-eps=np.full((nx,ny,nz),8.854187817e-12)
-mu=np.full((nx,ny,nz),1.2566370614e-6)
-sigma=np.full((nx,ny,nz),0.0)
+from make_input import MakeInput        # 入力配列の作成
+from make_signal_matrix import MakeWaveFormMatrix
+os.chdir("./circuitInformation/")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
-#　meshの設定
+# Load Circuit Information
 #---------------------------------------------------------------------------------------------------------------------------------------------------
-X1 = np.linspace(0, nx, nx+1)
-Y1 = np.linspace(0, ny, ny+1)
-Z1 = np.linspace(0, nz, nz+1)
-#Y2, Z2 = np.meshgrid(Y1[:-1],Z1)
-#X2, Y2 = np.meshgrid(X1,Y1)
-X2, Z2 = np.meshgrid(X1,Z1)
+CirName = "1-1-1-1-1"
+dx, dy, dz, dt, nx, ny, nz, nt, ε, μ, ρ, PIX,PIY = MakeInput(CirName)
+
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　入力波形の設定
 #---------------------------------------------------------------------------------------------------------------------------------------------------
-#Signal = SquareWavePulse(1.0,dt*10,dt*10,dt*10,dt*20,dt,nt)
-Signal = GaussianPulse(1.0,10*dt,40*dt,dt,nt)
+InputInfo = pd.ExcelFile("InputInformation"+CirName+".xlsx")
+Signal = MakeWaveFormMatrix(InputInfo,dt,nt)
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　電磁界計算
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #H_x, H_y, H_z, E_x, E_y, E_z, J_z = calc_stick(in_stick, len_stick, dis_stick, in_current, Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, sigma)
-H_x, H_y, H_z, E_x, E_y, E_z, J_x, J_z = calc_board(in_board, len_board, wid_board, dis_board, in_current, Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, sigma)
+H_x, H_y, H_z, E_x, E_y, E_z, J_x, J_z = calc_stick(Signal, dx, dy, dz, dt, nx, ny, nz, nt, ε, μ, ρ, PIX, PIY)
     
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　可視化

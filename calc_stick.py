@@ -6,12 +6,12 @@ from keisu_calc import keisu_calc
 from numba import jit,prange
 
 @jit(nopython=True,parallel=True)
-def calc_stick(in_stick, len_stick, dis_stick, in_current, Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, sigma):
+def calc_stick(Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY):
    
     #---------------------------------------------------------------------------------------------------------------------------------------------------
     #　係数の計算
     #---------------------------------------------------------------------------------------------------------------------------------------------------
-    dhx, dhy, dhz, ce, dex, dey, dez, de= keisu_calc(dx, dy, dz, dt, eps, mu, sigma)
+    dhx, dhy, dhz, ce, dex, dey, dez, de= keisu_calc(dx, dy, dz, dt, eps, mu, rho)
 
     #---------------------------------------------------------------------------------------------------------------------------------------------------
     #　初期化
@@ -22,24 +22,27 @@ def calc_stick(in_stick, len_stick, dis_stick, in_current, Signal, dx, dy, dz, d
     H_x = np.zeros(shape=(nx+1, ny, nz, nt))
     H_y = np.zeros(shape=(nx, ny+1, nz, nt))
     H_z = np.zeros(shape=(nx, ny, nz+1, nt)) 
+    J_x = np.zeros(shape=(nx, ny+1, nz+1, nt)) 
+    J_y = np.zeros(shape=(nx+1, ny, nz+1, nt)) 
     J_z = np.zeros(shape=(nx+1, ny+1, nz, nt)) 
 
     for t in range(nt-1):
-        
+        if t%10 == 0:
+            print(str(t%10),"%")
         #---------------------------------------------------------------------------------------------------------------------------------------------------
         #　入力信号
         #---------------------------------------------------------------------------------------------------------------------------------------------------
-        if dis_stick % 2 != 0:
-            dis_stick = dis_stick + 1
-
-        J_z[nx//2+1,(ny//2+1)-(dis_stick//2),in_current,t+1] = -Signal[t]
-        J_z[nx//2+1,(ny//2+1)+(dis_stick//2),in_current,t+1] = Signal[t]
+        for i in range(nt):
+            x               = int(Signal[i,0])
+            y               = int(Signal[i,1])
+            z               = int(Signal[i,2])
+            J_x[x,y,z,t]    = Signal[i,3+t]
        
         #---------------------------------------------------------------------------------------------------------------------------------------------------
         #　電磁界計算
         #---------------------------------------------------------------------------------------------------------------------------------------------------
         #Hx_calc
-        for x in prange(nx-1):   
+        for x in prange(nx+1):   
             for y in range(ny):
                 for z in range(nz):                         
                     H_x[x,y,z,t+1] = H_x[x,y,z,t] + dhz[x,y,z] * (E_y[x,y,z+1,t] - E_y[x,y,z,t])\
@@ -59,44 +62,43 @@ def calc_stick(in_stick, len_stick, dis_stick, in_current, Signal, dx, dy, dz, d
                     H_z[x,y,z,t+1] = H_z[x,y,z,t] + dhy[x,y,z] * (E_x[x,y+1,z,t] - E_x[x,y,z,t])\
                                                         - dhx[x,y,z] * (E_y[x+1,y,z,t] - E_y[x,y,z,t])
 
-        #Ex_calc
+        # Ex_calc, shape=(nx, ny+1, nz+1, nt)
         for x in prange(nx):
             for y in range(1,ny):
                 for z in range(1,nz):
-                    E_x[x,y,z,t+1] = ce[x,y,z] * E_x[x,y,z,t] + dey[x,y,z] * (H_z[x,y,z,t+1] - H_z[x,y-1,z,t+1])\
-                                                        - dez[x,y,z] * (H_y[x,y,z,t+1] - H_y[x,y,z-1,t+1])
+                    if PIX[x,y,z] == 0.0:
+                        E_x[x,y,z,t+1] = ce[x,y,z] * E_x[x,y,z,t] + dey[x,y,z] * (H_z[x,y,z,t+1] - H_z[x,y-1,z,t+1])\
+                                                            - dez[x,y,z] * (H_y[x,y,z,t+1] - H_y[x,y,z-1,t+1])\
+                                                            - de[x,y,z] * J_x[x,y,z,t+1]
+                    else:
+                        E_x[x,y,z,t+1] = 0.0
+                        J_x[x,y,z,t+1] = (1/dy) * (H_z[x,y,z,t] - H_z[x,y-1,z,t])\
+                                                                -(1/dz) * (H_y[x,y,z,t] - H_y[x,y,z-1,t])
+        
 
-        #Ey_calc
+        #Ey_calc, shape=(nx+1, ny, nz+1, nt)
         for x in prange(1,nx):
             for y in range(ny):
                 for z in range(1,nz):   
-                    E_y[x,y,z,t+1] = ce[x,y,z] * E_y[x,y,z,t] + dez[x,y,z] * (H_x[x,y,z,t+1] - H_x[x,y,z-1,t+1])\
-                                                        - dex[x,y,z] * (H_z[x,y,z,t+1] - H_z[x-1,y,z,t+1])
-           
-        #Ez_calc
+                    if PIY[x,y,z] == 0:
+                        E_y[x,y,z,t+1] = ce[x,y,z] * E_y[x,y,z,t] + dez[x,y,z] * (H_x[x,y,z,t+1] - H_x[x,y,z-1,t+1])\
+                                                            - dex[x,y,z] * (H_z[x,y,z,t+1] - H_z[x-1,y,z,t+1])\
+                                                            - de[x,y,z] * J_y[x,y,z,t+1]
+                    else:
+                        E_y[x,y,z,t+1] = 0           
+                        J_y[x,y,z,t+1] = (1/dz) * (H_x[x,y,z,t] - H_x[x,y,z-1,t])\
+                                                                -(1/dx) * (H_z[x,y,z,t] - H_z[x-1,y,z,t])
+        # Ez_calc, shape=(nx+1, ny, nz+1, nt)
         for x in prange(1,nx):
             for y in range(1,ny):
                 for z in range(nz):        
                     E_z[x,y,z,t+1] = ce[x,y,z] * E_z[x,y,z,t] + dex[x,y,z] * (H_y[x,y,z,t+1] - H_y[x-1,y,z,t+1])\
-                                                            - dey[x,y,z] * (H_x[x,y,z,t+1] - H_x[x,y-1,z,t+1]) \
-                                                            - de[x,y,z] * J_z[x,y,z,t+1]
+                                                        - dey[x,y,z] * (H_x[x,y,z,t+1] - H_x[x,y-1,z,t+1]) \
+                                                        # - de[x,y,z] * J_z[x,y,z,t+1]
+
+        
 
         #---------------------------------------------------------------------------------------------------------------------------------------------------
-        #　導体棒における電流の計算
-        #---------------------------------------------------------------------------------------------------------------------------------------------------
-        
-        for z in range(in_stick,in_stick+len_stick):
-            E_z[nx//2+1,(ny//2+1)+(dis_stick//2),z,t+1] = 0
-            J_z[x,(ny//2+1)+(dis_stick//2),z,t+1] = (1/dx) * (H_y[nx//2+1,(ny//2+1)+dis_stick//2,z,t] - H_y[nx//2,(ny//2+1)+dis_stick//2,z,t])\
-                                                                -(1/dy) * (H_x[nx//2+1,(ny//2+1)+dis_stick//2,z,t] - H_x[nx//2+1,(ny//2)+dis_stick//2,z,t])
-        
-        for z in range(in_stick,in_stick+len_stick):
-            E_z[nx//2+1,(ny//2+1)-(dis_stick//2),z,t+1] = 0
-            J_z[x,(ny//2+1)-(dis_stick//2),z,t+1] = (1/dx) * (H_y[nx//2+1,(ny//2+1)-dis_stick//2,z,t] - H_y[nx//2,(ny//2+1)-dis_stick//2,z,t])\
-                                                                -(1/dy) * (H_x[nx//2+1,(ny//2+1)-dis_stick//2,z,t] - H_x[nx//2+1,(ny//2)-dis_stick//2,z,t])
-        
-
-  #---------------------------------------------------------------------------------------------------------------------------------------------------
         #　境界条件の設定
         #---------------------------------------------------------------------------------------------------------------------------------------------------
         α1 = 1.0
