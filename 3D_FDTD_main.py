@@ -74,22 +74,22 @@ H_x, H_y, H_z, E_x, E_y, E_z, J_x, J_z = calc_stick(Signal, dx, dy, dz, dt, nx, 
 # ani.save('anim.gif', writer="imagemagick")
 
 
-fig = plt.figure(figsize=(12.5,10))    
-nFrame = 300
-rate = 3
-def update(i):
-    plt.cla()
-    # ax = fig.gca(projection='3d')    
-    time = rate*i
-    print(time)
-    ### Plot ###
-    plt.imshow(J_x[:, (ny//2+1)+(dis_board//2), :, i],vmax=0.1,vmin=-0.1,cmap="bwr")
-    # ax.set_zlim(zlim)
-    plt.tight_layout()
-ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
-# ani.save("Movie.gif", writer="imagemagick")
+# fig = plt.figure(figsize=(12.5,10))    
+# nFrame = 300
+# rate = 3
+# def update(i):
+#     plt.cla()
+#     # ax = fig.gca(projection='3d')    
+#     time = rate*i
+#     print(time)
+#     ### Plot ###
+#     plt.imshow(J_x[:, (ny//2+1)+(dis_board//2), :, i],vmax=0.1,vmin=-0.1,cmap="bwr")
+#     # ax.set_zlim(zlim)
+#     plt.tight_layout()
+# ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
+# # ani.save("Movie.gif", writer="imagemagick")
 
-plt.show()
+# plt.show()
 
 
 
