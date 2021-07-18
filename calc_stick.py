@@ -5,8 +5,9 @@ from MakeSignal import *
 from keisu_calc import keisu_calc
 from numba import jit,prange
 
-@jit(nopython=True,parallel=True)
-def calc_stick(Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY):
+# @jit(nopython=True,parallel=True)
+# @jit(nopython=True)
+def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY):
    
     #---------------------------------------------------------------------------------------------------------------------------------------------------
     #　係数の計算
@@ -27,12 +28,13 @@ def calc_stick(Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY):
     J_z = np.zeros(shape=(nx+1,ny+1, nz,  3)) 
 
     for t in range(nt):
+        print(t)
         # if t/nt == 0.0:
             # print(str(t%10),"%")
         #---------------------------------------------------------------------------------------------------------------------------------------------------
         #　入力信号
         #---------------------------------------------------------------------------------------------------------------------------------------------------
-        for i in range(nt):
+        for i in range(nInput):
             x               = int(Signal[i,0])
             y               = int(Signal[i,1])
             z               = int(Signal[i,2])
@@ -42,28 +44,28 @@ def calc_stick(Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY):
         #　電磁界計算
         #---------------------------------------------------------------------------------------------------------------------------------------------------
         #Hx_calc
-        for x in prange(nx+1):   
+        for x in range(nx+1):   
             for y in range(ny):
                 for z in range(nz):                         
                     H_x[x,y,z,0] = H_x[x,y,z,t] + dhz[x,y,z] * (E_y[x,y,z+1,1] - E_y[x,y,z,1])\
                                                     - dhy[x,y,z] * (E_z[x,y+1,z,1] - E_z[x,y,z,1])
 
         #Hy_calc
-        for x in prange(nx):
+        for x in range(nx):
             for y in range(ny-1):
                 for z in range(nz):
                     H_y[x,y,z,0] = H_y[x,y,z,1] + dhx[x,y,z] * (E_z[x+1,y,z,1] - E_z[x,y,z,1])\
                                                     - dhz[x,y,z] * (E_x[x,y,z+1,1] - E_x[x,y,z,1])
 
         #Hz_calc
-        for x in prange(nx):
+        for x in range(nx):
             for y in range(ny):
                 for z in range(nz-1):
                     H_z[x,y,z,0] = H_z[x,y,z,1] + dhy[x,y,z] * (E_x[x,y+1,z,1] - E_x[x,y,z,1])\
                                                         - dhx[x,y,z] * (E_y[x+1,y,z,1] - E_y[x,y,z,1])
 
         # Ex_calc, shape=(nx, ny+1, nz+1, nt)
-        for x in prange(nx):
+        for x in range(nx):
             for y in range(1,ny):
                 for z in range(1,nz):
                     if PIX[x,y,z] == 0.0:
@@ -77,7 +79,7 @@ def calc_stick(Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY):
         
 
         #Ey_calc, shape=(nx+1, ny, nz+1, nt)
-        for x in prange(1,nx):
+        for x in range(1,nx):
             for y in range(ny):
                 for z in range(1,nz):   
                     if PIY[x,y,z] == 0:
@@ -89,7 +91,7 @@ def calc_stick(Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY):
                         J_y[x,y,z,0] = (1/dz) * (H_x[x,y,z,1] - H_x[x,y,z-1,1])\
                                                                 -(1/dx) * (H_z[x,y,z,1] - H_z[x-1,y,z,1])
         # Ez_calc, shape=(nx+1, ny, nz+1, nt)
-        for x in prange(1,nx):
+        for x in range(1,nx):
             for y in range(1,ny):
                 for z in range(nz):        
                     E_z[x,y,z,0] = ce[x,y,z] * E_z[x,y,z,1] + dex[x,y,z] * (H_y[x,y,z,0] - H_y[x-1,y,z,0])\
