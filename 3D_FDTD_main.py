@@ -33,7 +33,7 @@ Signal = MakeWaveFormMatrix(InputInfo,dt,nt)
 #　電磁界計算
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #H_x, H_y, H_z, E_x, E_y, E_z, J_z = calc_stick(in_stick, len_stick, dis_stick, in_current, Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, sigma)
-H_x, H_y, H_z, E_x, E_y, E_z, J_x, J_z = calc_stick(Signal, dx, dy, dz, dt, nx, ny, nz, nt, ε, μ, ρ, PIX, PIY)
+H_x, H_y, H_z, E_x, E_y, E_z, J_x, J_z = calc_stick(Signal, Signal.shape[0],dx, dy, dz, dt, nx, ny, nz, nt, ε, μ, ρ, PIX, PIY)
     
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　可視化
@@ -74,22 +74,22 @@ H_x, H_y, H_z, E_x, E_y, E_z, J_x, J_z = calc_stick(Signal, dx, dy, dz, dt, nx, 
 # ani.save('anim.gif', writer="imagemagick")
 
 
-fig = plt.figure(figsize=(12.5,10))    
-nFrame = 300
-rate = 3
-def update(i):
-    plt.cla()
-    # ax = fig.gca(projection='3d')    
-    time = rate*i
-    print(time)
-    ### Plot ###
-    plt.imshow(J_x[:, (ny//2+1)+(dis_board//2), :, i],vmax=0.1,vmin=-0.1,cmap="bwr")
-    # ax.set_zlim(zlim)
-    plt.tight_layout()
-ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
-# ani.save("Movie.gif", writer="imagemagick")
+# fig = plt.figure(figsize=(12.5,10))    
+# nFrame = 300
+# rate = 3
+# def update(i):
+#     plt.cla()
+#     # ax = fig.gca(projection='3d')    
+#     time = rate*i
+#     print(time)
+#     ### Plot ###
+#     plt.imshow(J_x[:, (ny//2+1)+(dis_board//2), :, i],vmax=0.1,vmin=-0.1,cmap="bwr")
+#     # ax.set_zlim(zlim)
+#     plt.tight_layout()
+# ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
+# # ani.save("Movie.gif", writer="imagemagick")
 
-plt.show()
+# plt.show()
 
 
 
