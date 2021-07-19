@@ -8,6 +8,7 @@ import matplotlib.animation as animation #アニメーション作成のため�
 from MakeSignal import *
 # from calc_board import calc_board
 from calc_stick import calc_stick
+from keisu_calc import keisu_calc
 
 import os
 import pandas as pd
@@ -20,7 +21,7 @@ os.chdir("./circuitInformation/")
 # Load Circuit Information
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 CirName = "1-1-1-1-1"
-dx, dy, dz, dt, nx, ny, nz, nt, ε, μ, ρ, PIX,PIY = MakeInput(CirName)
+dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX,PIY = MakeInput(CirName)
 
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -30,10 +31,15 @@ InputInfo = pd.ExcelFile("InputInformation"+CirName+".xlsx")
 Signal = MakeWaveFormMatrix(InputInfo,dt,nt)
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
+#　係数の計算
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de= keisu_calc(dx, dy, dz, dt, eps, mu, rho)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------
 #　電磁界計算
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #H_x, H_y, H_z, E_x, E_y, E_z, J_z = calc_stick(in_stick, len_stick, dis_stick, in_current, Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, sigma)
-H_x, H_y, H_z, E_x, E_y, E_z, J_x, J_z = calc_stick(Signal, Signal.shape[0],dx, dy, dz, dt, nx, ny, nz, nt, ε, μ, ρ, PIX, PIY)
+data1,data2 = calc_stick(Signal, Signal.shape[0],dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de)
     
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　可視化
@@ -74,22 +80,25 @@ H_x, H_y, H_z, E_x, E_y, E_z, J_x, J_z = calc_stick(Signal, Signal.shape[0],dx, 
 # ani.save('anim.gif', writer="imagemagick")
 
 
-# fig = plt.figure(figsize=(12.5,10))    
-# nFrame = 300
-# rate = 3
-# def update(i):
-#     plt.cla()
-#     # ax = fig.gca(projection='3d')    
-#     time = rate*i
-#     print(time)
-#     ### Plot ###
-#     plt.imshow(J_x[:, (ny//2+1)+(dis_board//2), :, i],vmax=0.1,vmin=-0.1,cmap="bwr")
-#     # ax.set_zlim(zlim)
-#     plt.tight_layout()
-# ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
-# # ani.save("Movie.gif", writer="imagemagick")
+fig = plt.figure()    
+nFrame = 500
+rate = 5
+vmax = data2.max()/2
+vmin = -data2.max()/2
+def update(i):
+    plt.cla()
+    # ax = fig.gca(projection='3d')    
+    time = rate*i
+    print(time)
+    ### Plot ###
+    # plt.imshow(data2[:, : ,7, i],vmax=vmax,vmin=vmin,cmap="bwr")
+    # ax.set_zlim(zlim)
+    plt.plot(data1[:,14,7,i])
+    plt.tight_layout()
+ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
+# ani.save("Movie.gif", writer="imagemagick")
 
-# plt.show()
+plt.show()
 
 
 

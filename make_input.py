@@ -30,7 +30,7 @@ def MakeInput(CirName):
     PC      = np.zeros([nx,ny,nz])              # Conductor Position
     LayerList = CirInfo.book.sheet_names()
     for i,sheet in enumerate(LayerList[1:]):    # LayerList[0] は Circuit Values
-        PC[:,:,i] = np.array(CirInfo.parse(sheet,index_col=0))
+        PC[:,:,i] = np.array(CirInfo.parse(sheet,index_col=0)).T
     # Ex配列の導体の位置
     PIX     = MakeIXPosition(PC)
     PIY     = MakeIYPosition(PC)
