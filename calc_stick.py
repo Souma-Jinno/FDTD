@@ -26,6 +26,12 @@ def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX
     J_x = np.zeros(shape=(nx,  ny+1, nz+1,3)) 
     J_y = np.zeros(shape=(nx+1,ny,   nz+1,3)) 
     J_z = np.zeros(shape=(nx+1,ny+1, nz,  3)) 
+<<<<<<< Updated upstream
+=======
+    # E_x_save = np.zeros(shape=(nx,  ny+1, nz+1,nt))
+    E_z_save = np.zeros(shape=(nx+1,  ny+1, nz,nt))
+    J_x_save = np.zeros(shape=(nx,  ny+1, nz+1,nt))
+>>>>>>> Stashed changes
 
     for t in range(nt):
         print(t)
@@ -526,6 +532,13 @@ def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX
                 -(1-d1)*(1-d2)*E_z[-3,-1,z,2]
                 )
             )
+<<<<<<< Updated upstream
+=======
+        # E_x_save[:,:,:,t] = E_x[:,:,:,0]
+        E_z_save[:,:,:,t] = E_z[:,:,:,0]
+        J_x_save[:,:,:,t] = J_x[:,:,:,0]
+
+>>>>>>> Stashed changes
         E_x[:,:,:,2] = E_x[:,:,:,1]
         E_x[:,:,:,1] = E_x[:,:,:,0]
         E_x[:,:,:,0] = 0*E_x[:,:,:,0]
@@ -553,8 +566,13 @@ def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX
         J_z[:,:,:,2] = J_z[:,:,:,1]
         J_z[:,:,:,1] = J_z[:,:,:,0]
         J_z[:,:,:,0] = 0*J_z[:,:,:,0]
+<<<<<<< Updated upstream
 
     return H_x, H_y, H_z, E_x, E_y, E_z, J_z
+=======
+        
+    return  E_z_save,J_x_save
+>>>>>>> Stashed changes
 
 
     

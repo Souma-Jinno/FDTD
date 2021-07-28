@@ -47,12 +47,12 @@ def MakeInput(CirName):
         df_temp = EpsInfo.parse(sheet,index_col=0)
         for j,eps_r in enumerate (εr):
             df_temp = df_temp.replace(j,ε0*eps_r)   # df_tempの中身はint型
-        ε[:,:,i] = np.array(df_temp)
+        ε[:,:,i] = np.array(df_temp).T              # Excelで入力した配置のx,y座標は配列[x,y]で表すと反転しているので転置する
     for i,sheet in enumerate(LayerList[1:]):
         df_temp = EpsInfo.parse(sheet,index_col=0)
         for j,mu_r in enumerate (μr):
             df_temp = df_temp.replace(j,μ0*mu_r)   # df_tempの中身はint型
-        μ[:,:,i] = np.array(df_temp)
+        μ[:,:,i] = np.array(df_temp).T
 
     c = c0/εr
     dt = 0.99/(c.max() * np.sqrt((1.0/dx ** 2 + 1.0/dy ** 2 + 1.0/dz ** 2))) #時間差分間隔[s]　
