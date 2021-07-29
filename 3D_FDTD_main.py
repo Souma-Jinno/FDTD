@@ -91,9 +91,9 @@ def update(i):
     time = rate*i
     print(time)
     ### Plot ###
-    # plt.imshow(data2[:, : ,7, i],vmax=vmax,vmin=vmin,cmap="bwr")
+    # plt.imshow(data2[:, : ,9, i],vmax=vmax,vmin=vmin,cmap="bwr")
     # ax.set_zlim(zlim)
-    plt.plot(data1[:,14,7,i])
+    plt.plot(data2[:,14,9,i])
     plt.tight_layout()
 ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
 # ani.save("Movie.gif", writer="imagemagick")
