@@ -6,7 +6,7 @@ from numba import jit,prange
 
 # @jit(nopython=True,parallel=True)
 @jit(nopython=True)
-def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de):
+def calc_arbitral(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,PIZ,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de):
    
    
     #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -21,8 +21,13 @@ def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX
     J_x = np.zeros(shape=(nx,  ny+1, nz+1,3)) 
     J_y = np.zeros(shape=(nx+1,ny,   nz+1,3)) 
     J_z = np.zeros(shape=(nx+1,ny+1, nz,  3)) 
-    E_x_save = np.zeros(shape=(nx,  ny+1, nz+1,nt))
-    J_x_save = np.zeros(shape=(nx,  ny+1, nz+1,nt))
+    # E_x_save = np.zeros(shape=(nx,  ny+1, nz+1,nt))
+    step_save = 10
+    nt2 = int(nt/step_save)
+    J_x_save = np.zeros(shape=(nx,  ny+1, nz+1,nt2))
+    H_x_save = np.zeros(shape=(ny,   nz,  nt2))
+    H_y_save = np.zeros(shape=(ny+1, nz,  nt2))
+    H_z_save = np.zeros(shape=(ny,   nz+1,nt2)) 
 
     for t in range(nt):
         print(t)
@@ -57,7 +62,7 @@ def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX
         #Hz_calc
         for x in range(nx):
             for y in range(ny):
-                for z in range(nz-1):
+                for z in range(nz+1):
                     H_z[x,y,z,0] = H_z[x,y,z,1] + dhy_Hz[x,y,z] * (E_x[x,y+1,z,1] - E_x[x,y,z,1])\
                                                         - dhx_Hz[x,y,z] * (E_y[x+1,y,z,1] - E_y[x,y,z,1])
 
@@ -86,19 +91,23 @@ def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX
                                         - (1/4)*(dex[x-1,y,z-1]+dex[x-1,y,z]+dex[x,y,z-1]+dex[x,y,z]) * (H_z[x,y,z,0] - H_z[x-1,y,z,0])\
                                         - (1/4)*(de[x-1,y,z]+de[x-1,y,z]+de[x,y,z-1]+de[x,y,z]) * J_y[x,y,z,0]
                     else:
-                        E_y[x,y,z,0] = 0           
+                        E_y[x,y,z,0] = 0.0           
                         J_y[x,y,z,0] = (1/dz) * (H_x[x,y,z,0] - H_x[x,y,z-1,0])\
                                                                 -(1/dx) * (H_z[x,y,z,0] - H_z[x-1,y,z,0])
 
         # Ez_calc, shape=(nx+1, ny, nz+1, nt)   # 薄さ0の平面導体としているため、z方向の電流は考えない
         for x in range(1,nx):
             for y in range(1,ny):
-                for z in range(nz):        
-                    E_z[x,y,z,0] = (1/4)*(ce[x-1,y-1,z]+ce[x-1,y,z]+ce[x,y-1,z]+ce[x,y,z]) * E_z[x,y,z,1]\
-                                    + (1/4)*(dex[x-1,y-1,z]+dex[x-1,y,z]+dex[x,y-1,z]+dex[x,y,z]) * (H_y[x,y,z,0] - H_y[x-1,y,z,0])\
-                                    - (1/4)*(dey[x-1,y-1,z]+dey[x-1,y,z]+dey[x,y-1,z]+dey[x,y,z]) * (H_x[x,y,z,0] - H_x[x,y-1,z,0]) \
-                                    - (1/4)*(de[x-1,y-1,z]+de[x-1,y,z]+de[x,y-1,z]+de[x,y,z]) * J_z[x,y,z,0]
-
+                for z in range(nz):
+                    if PIZ[x,y,z] == 0:
+                        E_z[x,y,z,0] = (1/4)*(ce[x-1,y-1,z]+ce[x-1,y,z]+ce[x,y-1,z]+ce[x,y,z]) * E_z[x,y,z,1]\
+                                        + (1/4)*(dex[x-1,y-1,z]+dex[x-1,y,z]+dex[x,y-1,z]+dex[x,y,z]) * (H_y[x,y,z,0] - H_y[x-1,y,z,0])\
+                                        - (1/4)*(dey[x-1,y-1,z]+dey[x-1,y,z]+dey[x,y-1,z]+dey[x,y,z]) * (H_x[x,y,z,0] - H_x[x,y-1,z,0]) \
+                                        - (1/4)*(de[x-1,y-1,z]+de[x-1,y,z]+de[x,y-1,z]+de[x,y,z]) * J_z[x,y,z,0]
+                    else:
+                        E_z[x,y,z,0] = 0.0
+                        J_z[x,y,z,0] = (1/dx) * (H_y[x,y,z,0]-H_y[x-1,y,z,0])\
+                                        - (1/dy) * (H_x[x,y,z,0]-H_x[x,y-1,z,0])
         
 
         #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -527,9 +536,13 @@ def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX
                 -(1-d1)*(1-d2)*E_z[-3,-1,z,2]
                 )
             )
-        E_x_save[:,:,:,t] = E_x[:,:,:,0]
-        J_x_save[:,:,:,t] = J_x[:,:,:,0]
-
+        # E_x_save[:,:,:,t] = E_x[:,:,:,0]
+        if t%step_save == 0:
+            t2 = int(t/step_save)
+            J_x_save[:,:,:,t2] = J_x[:,:,:,0]
+            H_x_save[:,:,t2]   = H_x[29,:,:,0]
+            H_y_save[:,:,t2]   = H_y[29,:,:,0]
+            H_z_save[:,:,t2]   = H_z[29,:,:,0]
         E_x[:,:,:,2] = E_x[:,:,:,1]
         E_x[:,:,:,1] = E_x[:,:,:,0]
         E_x[:,:,:,0] = 0*E_x[:,:,:,0]
@@ -558,7 +571,7 @@ def calc_stick(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX
         J_z[:,:,:,1] = J_z[:,:,:,0]
         J_z[:,:,:,0] = 0*J_z[:,:,:,0]
         
-    return  E_x_save,J_x_save
+    return  J_x_save,H_x_save,H_y_save,H_z_save
 
 
     

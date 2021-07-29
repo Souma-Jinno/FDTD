@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from make_position_matrix import MakeIXPosition, MakeIYPosition
+from make_position_matrix import MakeIXPosition, MakeIYPosition, MakeIZPosition
 
 
 
@@ -34,6 +34,7 @@ def MakeInput(CirName):
     # Ex配列の導体の位置
     PIX     = MakeIXPosition(PC)
     PIY     = MakeIYPosition(PC)
+    PIZ     = MakeIZPosition(PC)
     ρ = rho * PC
 
     
@@ -58,4 +59,4 @@ def MakeInput(CirName):
     dt = 0.99/(c.max() * np.sqrt((1.0/dx ** 2 + 1.0/dy ** 2 + 1.0/dz ** 2))) #時間差分間隔[s]　
     nt = int(TotalTime/dt)
 
-    return dx,dy,dz,dt,nx,ny,nz,nt,ε,μ,ρ,PIX,PIY
+    return dx,dy,dz,dt,nx,ny,nz,nt,ε,μ,ρ,PIX,PIY,PIZ

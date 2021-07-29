@@ -6,8 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation #アニメーション作成のためメソッドをインポート
 
 from MakeSignal import *
-# from calc_board import calc_board
-from calc_stick import calc_stick
+from calc_arbitral import calc_arbitral
 from keisu_calc import keisu_calc
 
 import os
@@ -21,7 +20,7 @@ os.chdir("./circuitInformation/")
 # Load Circuit Information
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 CirName = "1-1-1-1-1"
-dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX,PIY = MakeInput(CirName)
+dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX,PIY,PIZ = MakeInput(CirName)
 
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -38,8 +37,7 @@ dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de= keisu_calc(dx, dy, 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　電磁界計算
 #---------------------------------------------------------------------------------------------------------------------------------------------------
-#H_x, H_y, H_z, E_x, E_y, E_z, J_z = calc_stick(in_stick, len_stick, dis_stick, in_current, Signal, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, sigma)
-data1,data2 = calc_stick(Signal, Signal.shape[0],dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de)
+data1,data2,data3,data4 = calc_arbitral(Signal, Signal.shape[0],dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,PIZ,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de)
     
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　可視化
@@ -79,21 +77,23 @@ data1,data2 = calc_stick(Signal, Signal.shape[0],dx, dy, dz, dt, nx, ny, nz, nt,
 # ani = animation.FuncAnimation(fig,ims)
 # ani.save('anim.gif', writer="imagemagick")
 
-
+data = data1
 fig = plt.figure()    
-nFrame = 500
-rate = 5
-vmax = data2.max()/2
-vmin = -data2.max()/2
+nFrame = 393
+rate = 3
+vmax = data.max()/3
+vmin = -data.max()/3
 def update(i):
     plt.cla()
     # ax = fig.gca(projection='3d')    
     time = rate*i
     print(time)
     ### Plot ###
-    # plt.imshow(data2[:, : ,9, i],vmax=vmax,vmin=vmin,cmap="bwr")
+    # plt.imshow(data[:, : ,9, i],vmax=vmax,vmin=vmin,cmap="bwr")
     # ax.set_zlim(zlim)
-    plt.plot(data2[:,14,9,i])
+    plt.imshow(data[30,:,:,i].T,vmax=vmax,vmin=vmin,cmap="bwr")
+    # plt.plot(data[:,14,9,i].T)
+    # plt.ylim([vmin,vmax])
     plt.tight_layout()
 ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
 # ani.save("Movie.gif", writer="imagemagick")
