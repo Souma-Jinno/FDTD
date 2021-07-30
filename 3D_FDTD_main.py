@@ -20,15 +20,16 @@ os.chdir("./circuitInformation/")
 # Load Circuit Information
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 CirName = "1-1-1-1-1"
+step_save = 10
 dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX,PIY,PIZ = MakeInput(CirName)
 
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------------------------------------------
 #　入力波形の設定
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 InputInfo = pd.ExcelFile("InputInformation"+CirName+".xlsx")
 Signal = MakeWaveFormMatrix(InputInfo,dt,nt)
-
+nInput = Signal.shape[0]
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　係数の計算
 #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -37,68 +38,42 @@ dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de= keisu_calc(dx, dy, 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　電磁界計算
 #---------------------------------------------------------------------------------------------------------------------------------------------------
-data1,data2,data3,data4 = calc_arbitral(Signal, Signal.shape[0],dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,PIZ,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de)
-    
+Jx_yz,Hx_yz,Hy_yz,Hz_yz,Ex_yz,Ey_yz,Ez_yz,Jx_xz,Hx_xz,Hy_xz,Hz_xz,Ex_xz,Ey_xz,Ez_xz=calc_arbitral(CirName,step_save,Signal,nInput,dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,PIZ,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de)
+
+np.savez_compressed(
+            "3dFDTD_Circuit"+CirName+".npz",
+            dx=dx,dy=dy,dz=dz,dt=dt,step_save=step_save,
+            Jx_yz=Jx_yz,Hx_yz=Hx_yz,Hy_yz=Hy_yz,Hz_yz=Hz_yz,Ex_yz=Ex_yz,Ey_yz=Ey_yz,Ez_yz=Ez_yz,
+            Jx_xz=Jx_xz,Hx_xz=Hx_xz,Hy_xz=Hy_xz,Hz_xz=Hz_xz,Ex_xz=Ex_xz,Ey_xz=Ey_xz,Ez_xz=Ez_xz
+        )
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 #　可視化
 #---------------------------------------------------------------------------------------------------------------------------------------------------
-# fig = plt.figure() #新規ウィンドウを描画
-# fig.set_dpi(100)  #描画解像度の指定
-# #ax = Axes3D(fig)  #3D軸の形成
 
-# ims = []
+# data = data3
+# fig = plt.figure()    
+# nFrame = 2600
+# rate = 26
+# vmax = data.max()/3
+# vmin = -data.max()/3
+# # vmax = 1e-5
+# # vmin = -1e-5
+# def update(i):
+#     plt.cla()
+#     # ax = fig.gca(projection='3d')    
+#     time = rate*i
+#     print(time)
+#     ### Plot ###
+#     # plt.imshow(data[:, : ,9, i],vmax=vmax,vmin=vmin,cmap="bwr")
+#     # ax.set_zlim(zlim)
+#     plt.imshow(data[:,:,i].T,vmax=vmax,vmin=vmin,cmap="bwr")
+#     # plt.plot(data[:,14,9,i].T)
+#     # plt.ylim([vmin,vmax])
+#     plt.tight_layout()
+# ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
+# # ani.save("Movie.gif", writer="imagemagick")
 
-# for i in range(nt-1):
-
-#     if dis_board % 2 != 0:
-#         dis_board = dis_board + 1
-
-#     #img = plt.plot(J_z[nx//2+1,(ny//2+1)+(dis_board//2), :, i], color = 'g')
-#     #img = plt.plot(J_x[:,(ny//2+1)+(dis_board//2), nz//2+1, i], color = 'g')
-#     #img = plt.plot(H_y[:, ny//2+1, nz//2+1, i], color='g')
-#     #img = plt.plot(H_x[nx//2+1, :, nz//2+1, i], color= 'g')
-#     #img = plt.plot(E_z[:,ny//2+1, nz//2+1, i], color = 'g')
-
-#     img = plt.imshow(J_x[:, (ny//2+1)+(dis_board//2), :, i], cmap='bwr')
-
-#     #plt.title("YZplane")
-#     #plt.title("XZplane")
-#     #plt.title("XYplane")
-#     plt.xlabel('x[cm]')
-#     #plt.xlabel('y[cm]')
-#     #plt.xlabel('z[cm]')
-#     plt.ylabel('Jx[A/m^2]')
-#     #plt.ylabel('Jz[A/m^2]')
-#     #plt.ylabel('Hx[A/m]')  
-#     #plt.ylim(-1.0,1.0)
-
-#     ims.append(img)
-
-# ani = animation.FuncAnimation(fig,ims)
-# ani.save('anim.gif', writer="imagemagick")
-
-data = data1
-fig = plt.figure()    
-nFrame = 393
-rate = 3
-vmax = data.max()/3
-vmin = -data.max()/3
-def update(i):
-    plt.cla()
-    # ax = fig.gca(projection='3d')    
-    time = rate*i
-    print(time)
-    ### Plot ###
-    # plt.imshow(data[:, : ,9, i],vmax=vmax,vmin=vmin,cmap="bwr")
-    # ax.set_zlim(zlim)
-    plt.imshow(data[30,:,:,i].T,vmax=vmax,vmin=vmin,cmap="bwr")
-    # plt.plot(data[:,14,9,i].T)
-    # plt.ylim([vmin,vmax])
-    plt.tight_layout()
-ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
-# ani.save("Movie.gif", writer="imagemagick")
-
-plt.show()
+# plt.show()
 
 
 

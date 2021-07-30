@@ -19,18 +19,18 @@ def MakeInput(CirName):
     Height  = float(CirVal.loc["Height"])
     rho     = float(CirVal.loc["Rho"])
     temp    = np.array(CirInfo.parse("Layer1",index_col=0))
-    nz      = int(CirVal.loc["Layer Number"])
-    ny      = temp.shape[0]
-    nx      = temp.shape[1]
+    nx      = int(CirVal.loc["Layer Number"])
+    nz      = temp.shape[0]
+    ny      = temp.shape[1]
     dx      = Width/nx
     dy      = Length/ny
     dz      = Height/nz
 
     # 計算領域内の導体の位置
     PC      = np.zeros([nx,ny,nz])              # Conductor Position
-    LayerList = CirInfo.book.sheet_names()
+    LayerList = CirInfo.book.sheetnames
     for i,sheet in enumerate(LayerList[1:]):    # LayerList[0] は Circuit Values
-        PC[:,:,i] = np.array(CirInfo.parse(sheet,index_col=0)).T
+        PC[i,:,:] = np.array(CirInfo.parse(sheet,index_col=0)).T        # yz平面を読み込む
     # Ex配列の導体の位置
     PIX     = MakeIXPosition(PC)
     PIY     = MakeIYPosition(PC)
@@ -48,12 +48,12 @@ def MakeInput(CirName):
         df_temp = EpsInfo.parse(sheet,index_col=0)
         for j,eps_r in enumerate (εr):
             df_temp = df_temp.replace(j,ε0*eps_r)   # df_tempの中身はint型
-        ε[:,:,i] = np.array(df_temp).T
+        ε[i,:,:] = np.array(df_temp).T
     for i,sheet in enumerate(LayerList[1:]):
         df_temp = EpsInfo.parse(sheet,index_col=0)
         for j,mu_r in enumerate (μr):
             df_temp = df_temp.replace(j,μ0*mu_r)   # df_tempの中身はint型
-        μ[:,:,i] = np.array(df_temp).T
+        μ[i,:,:] = np.array(df_temp).T
 
     c = c0/εr
     dt = 0.99/(c.max() * np.sqrt((1.0/dx ** 2 + 1.0/dy ** 2 + 1.0/dz ** 2))) #時間差分間隔[s]　

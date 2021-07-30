@@ -13,7 +13,7 @@ def MakeIXPosition(PC):
     temp2_z = np.concatenate((temp,zero_xy),axis=2)         
     temp    = temp1_z+temp2_z
     for i in range(nz+1):
-        PIX[:,:,i] = np.array(pd.DataFrame(temp[:,:,i]).replace([1.0,2.0,3.0],1.0))
+        PIX[:,:,i] = np.array(pd.DataFrame(temp[:,:,i]).replace([1.0,2.0,3.0,4.0],1.0))
     return PIX
 
 def MakeIYPosition(PC):
@@ -28,7 +28,7 @@ def MakeIYPosition(PC):
     temp2_z = np.concatenate((temp,zero_xy),axis=2)       
     temp    = temp1_z+temp2_z
     for i in range(nz+1):
-        PIY[:,:,i] = np.array(pd.DataFrame(temp[:,:,i]).replace([1.0,2.0,3.0],1.0))
+        PIY[:,:,i] = np.array(pd.DataFrame(temp[:,:,i]).replace([1.0,2.0,3.0,4.0],1.0))
     return PIY
 
 
@@ -45,5 +45,5 @@ def MakeIZPosition(PC):
     temp2_y = np.concatenate((temp,zero_zx),axis=1)       
     temp    = temp1_y+temp2_y
     for i in range(nz):
-        PIZ[:,:,i] = np.array(pd.DataFrame(temp[:,:,i]).replace([1.0,2.0,3.0],1.0))
+        PIZ[:,:,i] = np.array(pd.DataFrame(temp[:,:,i]).replace([1.0,2.0,3.0,4.0],1.0))
     return PIZ

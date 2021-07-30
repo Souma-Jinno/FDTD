@@ -4,10 +4,9 @@ import numpy as np
 from MakeSignal import *
 from numba import jit,prange
 
-# @jit(nopython=True,parallel=True)
-@jit(nopython=True)
-def calc_arbitral(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,PIZ,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de):
-   
+@jit(nopython=True,parallel=True)
+# @jit(nopython=True)
+def calc_arbitral(CirName,step_save,Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, PIX, PIY,PIZ,dhy_Hx,dhz_Hx,dhx_Hy,dhz_Hy,dhy_Hz,dhx_Hz,ce,dex,dey,dez,de):
    
     #---------------------------------------------------------------------------------------------------------------------------------------------------
     #　初期化
@@ -22,17 +21,26 @@ def calc_arbitral(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, 
     J_y = np.zeros(shape=(nx+1,ny,   nz+1,3)) 
     J_z = np.zeros(shape=(nx+1,ny+1, nz,  3)) 
     # E_x_save = np.zeros(shape=(nx,  ny+1, nz+1,nt))
-    step_save = 10
     nt2 = int(nt/step_save)
-    J_x_save = np.zeros(shape=(nx,  ny+1, nz+1,nt2))
-    H_x_save = np.zeros(shape=(ny,   nz,  nt2))
-    H_y_save = np.zeros(shape=(ny+1, nz,  nt2))
-    H_z_save = np.zeros(shape=(ny,   nz+1,nt2)) 
+    Jx_yz = np.zeros(shape=(ny+1, nz+1,nt2))
+    Hx_yz = np.zeros(shape=(ny,   nz,  nt2))
+    Hy_yz = np.zeros(shape=(ny+1, nz,  nt2))
+    Hz_yz = np.zeros(shape=(ny,   nz+1,nt2))
+    Ex_yz = np.zeros(shape=(ny+1, nz+1,nt2))
+    Ey_yz = np.zeros(shape=(ny,   nz+1,nt2))
+    Ez_yz = np.zeros(shape=(ny+1, nz,nt2)) 
+
+    Jx_xz = np.zeros(shape=(nx,   nz+1,nt2))
+    Hx_xz = np.zeros(shape=(nx+1, nz,  nt2))
+    Hy_xz = np.zeros(shape=(nx,   nz,  nt2))
+    Hz_xz = np.zeros(shape=(nx,   nz+1,nt2))
+    Ex_xz = np.zeros(shape=(nx,   nz+1,nt2))
+    Ey_xz = np.zeros(shape=(nx+1, nz+1,nt2))
+    Ez_xz = np.zeros(shape=(nx+1, nz,nt2)) 
 
     for t in range(nt):
-        print(t)
-        # if t/nt == 0.0:
-            # print(str(t%10),"%")
+        if t% 100 == 0:
+            print(int(t/nt *100),"%")
         #---------------------------------------------------------------------------------------------------------------------------------------------------
         #　入力信号
         #---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -539,10 +547,20 @@ def calc_arbitral(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, 
         # E_x_save[:,:,:,t] = E_x[:,:,:,0]
         if t%step_save == 0:
             t2 = int(t/step_save)
-            J_x_save[:,:,:,t2] = J_x[:,:,:,0]
-            H_x_save[:,:,t2]   = H_x[29,:,:,0]
-            H_y_save[:,:,t2]   = H_y[29,:,:,0]
-            H_z_save[:,:,t2]   = H_z[29,:,:,0]
+            Jx_yz[:,:,t2]   = J_x[100,:,:,0]
+            Hx_yz[:,:,t2]   = H_x[100,:,:,0]
+            Hy_yz[:,:,t2]   = H_y[100,:,:,0]
+            Hz_yz[:,:,t2]   = H_z[100,:,:,0]
+            Ex_yz[:,:,t2]   = E_x[100,:,:,0]
+            Ey_yz[:,:,t2]   = E_y[100,:,:,0]
+            Ez_yz[:,:,t2]   = E_z[100,:,:,0]
+            Jx_xz[:,:,t2]   = J_x[:,30,:,0]
+            Hx_xz[:,:,t2]   = H_x[:,30,:,0]
+            Hy_xz[:,:,t2]   = H_y[:,30,:,0]
+            Hz_xz[:,:,t2]   = H_z[:,30,:,0]
+            Ex_xz[:,:,t2]   = E_x[:,30,:,0]
+            Ey_xz[:,:,t2]   = E_y[:,30,:,0]
+            Ez_xz[:,:,t2]   = E_z[:,30,:,0]
         E_x[:,:,:,2] = E_x[:,:,:,1]
         E_x[:,:,:,1] = E_x[:,:,:,0]
         E_x[:,:,:,0] = 0*E_x[:,:,:,0]
@@ -570,8 +588,8 @@ def calc_arbitral(Signal, nInput, dx, dy, dz, dt, nx, ny, nz, nt, eps, mu, rho, 
         J_z[:,:,:,2] = J_z[:,:,:,1]
         J_z[:,:,:,1] = J_z[:,:,:,0]
         J_z[:,:,:,0] = 0*J_z[:,:,:,0]
+    return Jx_yz,Hx_yz,Hy_yz,Hz_yz,Ex_yz,Ey_yz,Ez_yz,Jx_xz,Hx_xz,Hy_xz,Hz_xz,Ex_xz,Ey_xz,Ez_xz
         
-    return  J_x_save,H_x_save,H_y_save,H_z_save
 
 
     
