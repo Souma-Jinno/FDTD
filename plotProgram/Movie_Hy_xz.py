@@ -12,7 +12,7 @@ os.chdir("../simulationData")
 
 
 # Simulation Data
-CirName = "1-1-1-1-1"
+CirName = "1-2-1-1-1"
 Data1 = np.load("3dFDTD_Circuit"+CirName+".npz")
 Hy_xz    = Data1["Hy_xz"]
 dt1      = Data1["dt"]
@@ -44,9 +44,19 @@ def update(i):
     print(time)
     ### Plot ###
     plt.imshow(Hy_xz[:,:,time].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
+    # plt.xticks(color="None")
+    # plt.yticks(color="None")
     plt.tight_layout()
 ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
 ani.save("Movie_Hy_xz_"+CirName+".gif", writer="imagemagick")
+
+
+fig = plt.figure(figsize=(8,6))    
+plt.imshow(Hy_xz[:,:,100].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
+plt.colorbar()
+plt.savefig("Movie_Hy_xz_"+CirName+"_colorbar.png")
+# plt.figure()
+# plt.plot(IX_So+IX_Gi)
 
 plt.show()
 os.chdir("../plotProgram/")

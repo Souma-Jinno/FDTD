@@ -28,6 +28,4 @@ CirNameで分別
 ↑ dhx,dhy,dhzの数
 ・空間の定義
 [x,y,z] or [z,y,x]
-[x,y,z]だと、plotする時に軸が逆になる。
 ・ipython内でrunしたあと、もう一度runすると、ERROR:root:File `'3D_FDTD_main.py'` not found.と出る
-・pythonのバージョンでpandasの使い方が違う。エクセルのsheetの名前取り込む。.book.sheet_names()→.book.sheetnames

@@ -14,7 +14,7 @@ os.chdir("../simulationData")
 # Simulation Data
 CirName = "1-1-1-1-1"
 Data1 = np.load("3dFDTD_Circuit"+CirName+".npz")
-Ez_xz    = Data1["Ez_xz"]
+Ez_yz    = Data1["Ez_yz"]
 dt1      = Data1["dt"]
 
 # dx = Data1["dx"]
@@ -38,8 +38,8 @@ fig=plt.figure(figsize=(7,5))
 
 nFrame = 300
 rate = 3
-vmax=Ez_xz[100,:,:].max()/3
-vmin=-Ez_xz[100,:,:].max()/3
+vmax=Ez_yz[30,:,:].max()/3
+vmin=-Ez_yz[30,:,:].max()/3
 
 def update(i):
     plt.clf()
@@ -48,17 +48,17 @@ def update(i):
     # t = dt*time
     print(time)
     ### Plot ###
-    plt.imshow(Ez_xz[:,:,time].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
+    plt.imshow(Ez_yz[:,:,time].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
     plt.xticks(color="None")
     plt.yticks(color="None")
     plt.tight_layout()
 ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
-ani.save("Movie_Ez_xz_"+CirName+".gif", writer="imagemagick")
+ani.save("Movie_Ez_yz_"+CirName+".gif", writer="imagemagick")
 
 fig=plt.figure(figsize=(7,5))
-plt.imshow(Ez_xz[:,:,100].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
+plt.imshow(Ez_yz[:,:,100].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
 plt.colorbar()
-plt.savefig("Movie_Ez_xz_"+CirName+"_colorbar.png")
+plt.savefig("Movie_Ez_yz_"+CirName+"_colorbar.png")
 # plt.figure()
 # plt.plot(IX_So+IX_Gi)
 plt.show()

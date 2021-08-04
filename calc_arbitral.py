@@ -48,7 +48,7 @@ def calc_arbitral(CirName,step_save,Signal, nInput, dx, dy, dz, dt, nx, ny, nz, 
             x               = int(Signal[i,0])-1
             y               = int(Signal[i,1])-1
             z               = int(Signal[i,2])-1
-            J_x[x,y,z,0]    = Signal[i,3+t]
+            J_x[x,y,z,0]    = 1/(dy*dz)*Signal[i,3+t]
        
         #---------------------------------------------------------------------------------------------------------------------------------------------------
         #　電磁界計算

@@ -14,17 +14,9 @@ os.chdir("../simulationData")
 # Simulation Data
 CirName = "1-1-1-1-1"
 Data1 = np.load("3dFDTD_Circuit"+CirName+".npz")
-Ez_xz    = Data1["Ez_xz"]
+Hy_yz    = Data1["Hy_yz"]
 dt1      = Data1["dt"]
 
-# dx = Data1["dx"]
-# dy  = Data1["dy"]
-# dz  = Data1["dz"]
-# uy      = np.linspace(0,length,nLength)
-# uX,uY   = np.meshgrid(ux,uy)
-# Nt = U1.shape[0]
-# T1 = np.arange(0,dt1*Nt,dt1)
-# position = np.linspace(0,width,nWidth)
 
 plt.rcParams['font.family'] ='Helvetica'#使用するフォント
 plt.rcParams['xtick.direction'] = 'in'#x軸の目盛線が内向き('in')か外向き('out')か双方向か('inout')
@@ -36,10 +28,13 @@ plt.rcParams['axes.linewidth'] = 1.0# 軸の線幅edge linewidth。囲みの太�
 
 fig=plt.figure(figsize=(7,5))
 
+
+
+
 nFrame = 300
 rate = 3
-vmax=Ez_xz[100,:,:].max()/3
-vmin=-Ez_xz[100,:,:].max()/3
+vmax=Hy_yz[30,:,:].max()/3
+vmin=-Hy_yz[30,:,:].max()/3
 
 def update(i):
     plt.clf()
@@ -48,18 +43,20 @@ def update(i):
     # t = dt*time
     print(time)
     ### Plot ###
-    plt.imshow(Ez_xz[:,:,time].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
+    plt.imshow(Hy_yz[:,:,time].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
     plt.xticks(color="None")
     plt.yticks(color="None")
     plt.tight_layout()
 ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
-ani.save("Movie_Ez_xz_"+CirName+".gif", writer="imagemagick")
+ani.save("Movie_Hy_yz_"+CirName+".gif", writer="imagemagick")
 
-fig=plt.figure(figsize=(7,5))
-plt.imshow(Ez_xz[:,:,100].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
+
+fig = plt.figure(figsize=(8,6))    
+plt.imshow(Hy_yz[:,:,100].T,vmax=vmax,vmin=vmin,cmap="bwr",origin="lower")
 plt.colorbar()
-plt.savefig("Movie_Ez_xz_"+CirName+"_colorbar.png")
+plt.savefig("Movie_Hy_yz_"+CirName+"_colorbar.png")
 # plt.figure()
 # plt.plot(IX_So+IX_Gi)
+
 plt.show()
 os.chdir("../plotProgram/")

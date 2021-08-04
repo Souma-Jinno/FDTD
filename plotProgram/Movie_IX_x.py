@@ -12,15 +12,16 @@ os.chdir("../simulationData")
 
 
 # Simulation Data
-CirName = "1-1-1-1-1"
+CirName = "1-2-1-1-1"
 Data1 = np.load("3dFDTD_Circuit"+CirName+".npz")
-Jx_xz    = Data1["Jx_xz"]
-Jx_yz    = Data1["Jx_yz"]
+
 dt1      = Data1["dt"]
 
 dx  = Data1["dx"]
 dy  = Data1["dy"]
 dz  = Data1["dz"]
+Jx_xz    = dy*dz*Data1["Jx_xz"]
+Jx_yz    = dy*dz*Data1["Jx_yz"]
 x = np.linspace(0,dx*Jx_xz.shape[0],Jx_xz.shape[0])
 
 plt.rcParams['font.family'] ='Helvetica'#使用するフォント
@@ -39,8 +40,8 @@ fig=plt.figure(figsize=(7,5))
 
 nFrame = 300
 rate = 3
-vmax=Jx_xz.max()/5
-vmin=-Jx_xz.max()/5
+vmax=Jx_xz.max()*0.9
+vmin=-Jx_xz.max()*0.9
 
 def update(i):
     plt.clf()
@@ -52,11 +53,11 @@ def update(i):
     plt.plot(x,Jx_xz[:,z_Si,time],color="red")
     plt.plot(x,Jx_xz[:,z_Gi,time],color="blue")
     plt.plot(x,Jx_xz[:,z_Go,time],color="green")
-    # plt.ylim([-0.75,0.75])
+    plt.ylim([vmin,vmax])
     # plt.xlim([x[0],x[-1]])
     plt.tight_layout()
 ani = animation.FuncAnimation(fig, update,frames=int(nFrame/rate))
-ani.save("Movie_IX_X_"+CirName+".gif", writer="imagemagick")
+ani.save("Movie_IX_x_"+CirName+".gif", writer="imagemagick")
 
 
 plt.show()
